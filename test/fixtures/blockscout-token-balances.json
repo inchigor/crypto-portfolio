@@ -1,0 +1,69 @@
+[
+  {
+    "value": "123456789",
+    "token": {
+      "address_hash": "0x1111111111111111111111111111111111111111",
+      "decimals": "6",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "type": "ERC-20",
+      "reputation": "ok",
+      "exchange_rate": "1"
+    }
+  },
+  {
+    "value": "1000000000000000001",
+    "token": {
+      "address_hash": "0x2222222222222222222222222222222222222222",
+      "decimals": "18",
+      "symbol": "TOK",
+      "name": "18 Decimal Token",
+      "type": "ERC-20",
+      "reputation": "ok"
+    }
+  },
+  {
+    "value": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
+    "token": {
+      "address_hash": "0x3333333333333333333333333333333333333333",
+      "decimals": "18",
+      "symbol": "BIG",
+      "name": "Large Uint Token",
+      "type": "ERC-20",
+      "reputation": "ok"
+    }
+  },
+  {
+    "value": "42",
+    "token": {
+      "address_hash": "0x4444444444444444444444444444444444444444",
+      "decimals": "0",
+      "symbol": null,
+      "name": null,
+      "type": "ERC-20",
+      "reputation": "unknown"
+    }
+  },
+  {
+    "value": "0",
+    "token": {
+      "address_hash": "0x5555555555555555555555555555555555555555",
+      "decimals": "6",
+      "symbol": "ZERO",
+      "name": "Zero Balance Token",
+      "type": "ERC-20",
+      "reputation": "ok"
+    }
+  },
+  {
+    "value": "1",
+    "token": {
+      "address_hash": "0x6666666666666666666666666666666666666666",
+      "decimals": "0",
+      "symbol": "NFT",
+      "name": "Ignored NFT",
+      "type": "ERC-721",
+      "reputation": "ok"
+    }
+  }
+]

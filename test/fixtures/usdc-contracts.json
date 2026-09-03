@@ -1,0 +1,38 @@
+{
+  "officialTokenBalance": {
+    "token": {
+      "address_hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "decimals": "6",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "type": "ERC-20",
+      "reputation": "ok"
+    },
+    "value": "1250000"
+  },
+  "fakeTokenBalance": {
+    "token": {
+      "address_hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "decimals": "6",
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "type": "ERC-20",
+      "reputation": "unknown"
+    },
+    "value": "999000000"
+  },
+  "coinMarketCapAsset": {
+    "id": 3408,
+    "rank": 6,
+    "name": "USDC",
+    "symbol": "USDC",
+    "slug": "usd-coin",
+    "platform": {
+      "id": 1027,
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "slug": "ethereum",
+      "token_address": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  }
+}

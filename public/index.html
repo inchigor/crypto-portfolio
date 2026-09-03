@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Portfolio</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="stylesheet" href="style.css?v=multi-wallet-polish-1" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Local tracker</p>
+          <h1>Crypto Portfolio</h1>
+        </div>
+        <div class="hero-actions">
+          <label class="wallet-scope-control" title="Select portfolio composition by wallet">
+            <span class="sr-only">Portfolio</span>
+            <select id="walletScopeSelect" aria-label="Select portfolio composition by wallet">
+              <option value="all">All wallets</option>
+            </select>
+          </label>
+          <label class="theme-toggle">
+            <span>Theme</span>
+            <select id="themeSelect">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </label>
+          <button id="refreshButton" class="ghost-button" title="Refresh prices" aria-label="Refresh prices">Prices</button>
+        </div>
+      </header>
+      <section class="dashboard">
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Portfolio value</span>
+            <select id="deltaRangeSelect" class="compact-select">
+              <option value="24h">24h</option>
+              <option value="7d">7d</option>
+              <option value="30d">30d</option>
+            </select>
+          </div>
+          <strong id="portfolioTotal">$0.00</strong>
+          <small id="portfolioDelta" class="portfolio-delta neutral">—</small>
+          <small id="portfolioPerformanceMeta" class="portfolio-performance-meta" title="Value change for the selected period">Value change for the selected period</small>
+        </article>
+        <article class="stat-card price-card">
+          <span>Prices</span>
+          <strong id="priceProvider" class="price-provider">No data</strong>
+          <small id="priceUpdated" class="price-updated">—</small>
+        </article>
+        <article class="stat-card">
+          <span>Ethereum assets</span>
+          <strong id="walletValue">—</strong>
+          <small id="walletValueMeta" class="neutral">No tracked assets</small>
+        </article>
+      </section>
+
+      <p id="priceWarning" class="price-warning hidden"></p>
+      <p id="walletWarning" class="wallet-warning hidden"></p>
+      <p id="walletScopeNote" class="wallet-scope-note hidden"></p>
+
+      <section class="panel wallet-summary">
+        <div class="wallet-summary-main">
+          <div>
+            <p class="section-label">Ethereum wallets</p>
+            <a id="walletAddressLink" class="address-link" target="_blank" rel="noreferrer"></a>
+          </div>
+          <span id="walletStatus" class="status-badge">Not synced</span>
+          <div>
+            <small>Last updated</small>
+            <strong id="walletLastSync">—</strong>
+          </div>
+          <div>
+            <small>Tracked assets</small>
+            <strong id="walletTrackedCount">0</strong>
+          </div>
+          <div>
+            <small>Prices</small>
+            <strong id="walletPricingCount">0 priced · 0 unpriced</strong>
+          </div>
+        </div>
+        <div class="wallet-summary-actions">
+          <button id="syncWalletButton" class="ghost-button" title="Sync Ethereum wallet data" aria-label="Sync Ethereum wallet data">Sync</button>
+          <button id="manageWalletButton" title="Manage Ethereum assets" aria-label="Manage Ethereum assets">Assets</button>
+        </div>
+      </section>
+
+      <section class="panel allocation-panel">
+        <div class="panel-header">
+          <h2>Allocation</h2>
+          <button id="allocationToggleButton" type="button" class="ghost-button hidden" aria-expanded="false">Show all</button>
+        </div>
+        <div id="allocationList" class="allocation-list"></div>
+      </section>
+
+      <section class="panel history-panel">
+        <div class="panel-header">
+          <div>
+            <h2>Portfolio history</h2>
+            <small class="muted-copy">Changes in portfolio composition can cause jumps in the chart.</small>
+            <small id="historyScopeNote" class="muted-copy hidden">History shows the entire portfolio.</small>
+          </div>
+          <div id="historyPeriodControls" class="history-period-controls" aria-label="History period"></div>
+        </div>
+        <div id="historyChart" class="history-chart"></div>
+      </section>
+
+      <section id="manualAssetPanel" class="panel">
+        <div class="panel-header">
+          <h2>Portfolio</h2>
+          <label class="asset-visibility-toggle" title="Show assets with zero amount or a value below $0.10">
+            <input id="showTinyAssetsToggle" type="checkbox" />
+            <span>Show small and zero balances</span>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th><button class="sort-button" data-sort-key="name" data-sort-label="Asset">Asset</button></th>
+                <th><button class="sort-button" data-sort-key="symbol" data-sort-label="Symbol">Symbol</button></th>
+                <th><button class="sort-button" data-sort-key="amount" data-sort-label="Amount">Amount</button></th>
+                <th><button class="sort-button" data-sort-key="currentPriceUsd" data-sort-label="Current price, USD">Current price, USD</button></th>
+                <th><button class="sort-button" data-sort-key="totalPerCoinUsd" data-sort-label="Value, USD">Value, USD</button></th>
+                <th><button class="sort-button" data-sort-key="assetWeightPercent" data-sort-label="Weight">Weight</button></th>
+                <th><button class="sort-button" data-sort-key="change24h" data-sort-label="24h %">24h %</button></th>
+                <th><button class="sort-button" data-sort-key="change7d" data-sort-label="7d %">7d %</button></th>
+                <th><button class="sort-button" data-sort-key="change30d" data-sort-label="30d %">30d %</button></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="portfolioBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Add or assign asset</h2>
+            <small class="muted-copy">For assets outside this Ethereum wallet</small>
+          </div>
+          <button id="manualEntryToggle" type="button" class="ghost-button">Manual entry</button>
+        </div>
+
+        <form id="assetForm" class="asset-form quick-add-form">
+          <input id="coinSearchInput" type="text" placeholder="Search asset" autocomplete="off" />
+          <input id="quickAmountInput" type="number" min="0" step="any" placeholder="Amount" />
+          <label class="manual-wallet-field"><span>Stored in</span><select id="manualWalletSelect"></select></label>
+          <button type="submit">Add</button>
+        </form>
+        <section id="errorBanner" class="error-banner hidden" aria-live="polite"></section>
+        <p id="selectedCoinLabel" class="selected-coin hidden"></p>
+        <div id="assignmentPrompt" class="assignment-prompt hidden"></div>
+        <div id="searchResults" class="search-results hidden"></div>
+        <p id="searchHint" class="search-hint hidden"></p>
+
+        <div id="manualEntryFields" class="manual-entry hidden">
+          <input id="nameInput" type="text" placeholder="Name" />
+          <input id="symbolInput" type="text" placeholder="Symbol" />
+          <input id="coingeckoIdInput" type="text" placeholder="CoinGecko ID" />
+          <input id="cmcIdInput" type="number" min="1" step="1" placeholder="CMC ID, optional" />
+          <input id="amountInput" type="number" min="0" step="any" placeholder="Amount" />
+        </div>
+      </section>
+
+      <section class="panel wallets-panel" aria-labelledby="walletsHeading">
+        <div class="panel-header">
+          <div>
+            <h2 id="walletsHeading">Wallets <span id="walletsCount" class="panel-count"></span></h2>
+            <small class="muted-copy">Logical storage locations and Ethereum/EVM connections</small>
+          </div>
+          <button id="walletsCollapseButton" type="button" class="ghost-button hidden" aria-controls="walletsContent" aria-expanded="true">Collapse</button>
+        </div>
+        <div id="walletsContent">
+          <form id="walletForm" class="wallet-form">
+            <label>
+              <span>Type</span>
+              <select id="walletTypeInput"><option value="evm">Ethereum / EVM</option><option value="manual">Manual</option></select>
+            </label>
+            <label>
+              <span>Name</span>
+              <input id="walletNameInput" type="text" maxlength="80" required />
+            </label>
+            <label id="walletAddressField">
+              <span>Address</span>
+              <input id="walletAddressInput" type="text" inputmode="text" autocomplete="off" required />
+            </label>
+            <label id="walletChainField" class="hidden">
+              <span>Network / category</span>
+              <select id="walletChainInput"><option value="monero">Monero</option><option value="bitcoin">Bitcoin</option><option value="ton">TON</option><option value="solana">Solana</option><option value="other">Other</option></select>
+            </label>
+            <button type="submit">Add wallet</button>
+          </form>
+          <p id="walletsMessage" class="utility-message hidden" role="status"></p>
+          <div id="walletsList" class="wallets-list"></div>
+        </div>
+      </section>
+
+      <section class="panel utility-panel">
+        <div class="panel-header">
+          <h2>Backups and export</h2>
+        </div>
+        <div class="utility-actions">
+          <button id="exportPortfolioJsonButton" type="button">Export portfolio JSON</button>
+          <button id="importPortfolioButton" type="button" class="ghost-button">Import portfolio JSON</button>
+          <input id="importPortfolioInput" type="file" accept="application/json,.json" class="hidden" />
+          <button id="exportPortfolioCsvButton" type="button" class="ghost-button">Export portfolio CSV</button>
+          <button id="exportHistoryCsvButton" type="button" class="ghost-button">Export history CSV</button>
+          <button id="backupNowButton" type="button" class="ghost-button">Create backup</button>
+        </div>
+        <p id="utilityMessage" class="utility-message hidden"></p>
+      </section>
+    </main>
+
+    <dialog id="walletManagerDialog" class="wallet-dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="section-label">Ethereum wallet</p>
+          <h2>Manage Ethereum assets</h2>
+        </div>
+        <button id="closeWalletManagerButton" type="button" class="icon-button" aria-label="Close">×</button>
+      </div>
+
+      <section class="wallet-manager-section">
+        <div class="section-heading">
+          <h3>Tracked assets</h3>
+          <span id="trackedAssetCount" class="status-badge">0</span>
+        </div>
+        <div id="trackedAssetsList" class="wallet-asset-list"></div>
+      </section>
+
+      <section class="wallet-manager-section">
+        <div class="section-heading">
+          <h3>Suggested assets</h3>
+          <span id="suggestedAssetCount" class="status-badge">0</span>
+        </div>
+        <div id="suggestedAssetsList" class="wallet-asset-list"></div>
+      </section>
+
+      <details id="otherDiscoveredAssetsSection" class="wallet-manager-section discovered-panel">
+        <summary>Other discovered tokens <span id="otherDiscoveredTokenCount">0</span></summary>
+        <label class="wallet-search-field">
+          <span class="sr-only">Search other discovered tokens</span>
+          <input id="discoveredTokenSearch" type="search" placeholder="Search by name, symbol, or contract" />
+        </label>
+        <div id="otherDiscoveredTokensList" class="wallet-asset-list"></div>
+      </details>
+    </dialog>
+
+    <dialog id="trackAssetDialog" class="track-dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="section-label">Source confirmation</p>
+          <h2>Track Ethereum asset</h2>
+        </div>
+        <button id="closeTrackDialogButton" type="button" class="icon-button" aria-label="Close">×</button>
+      </div>
+      <div id="trackAssetIdentity" class="track-identity"></div>
+      <label class="field-stack">
+        <span>Use an existing portfolio asset</span>
+        <select id="trackPortfolioAssetSelect"></select>
+      </label>
+      <div class="track-divider"><span>or find a priced asset</span></div>
+      <label class="field-stack">
+        <span>Search price providers</span>
+        <input id="trackPriceSearch" type="search" placeholder="Search by asset name" autocomplete="off" />
+      </label>
+      <div id="trackSearchResults" class="search-results hidden"></div>
+      <p id="trackSelection" class="selected-coin hidden"></p>
+      <div id="trackVerificationWarning" class="track-warning hidden"></div>
+      <label id="advancedTrackConfirmationLabel" class="advanced-confirmation hidden">
+        <input id="advancedTrackConfirmation" type="checkbox" />
+        <span>I understand that this contract is not verified by the price provider.</span>
+      </label>
+      <p id="trackError" class="dialog-error hidden"></p>
+      <div class="dialog-actions">
+        <button id="cancelTrackButton" type="button" class="ghost-button">Cancel</button>
+        <button id="confirmTrackButton" type="button">Confirm tracking</button>
+      </div>
+    </dialog>
+
+    <script src="ui.js?v=en-1"></script>
+    <script src="app.js?v=en-1"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "chainId": 1,
+  "source": "blockscout",
+  "blockscoutBaseUrl": "https://eth.blockscout.com",
+  "wallets": [],
+  "mappings": []
+}

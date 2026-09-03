@@ -1,0 +1,16 @@
+[
+  {
+    "id": "main",
+    "name": "Main",
+    "address": "0x1111111111111111111111111111111111111111",
+    "chain": "ethereum",
+    "enabled": true
+  },
+  {
+    "id": "reserve",
+    "name": "Reserve",
+    "address": "0x2222222222222222222222222222222222222222",
+    "chain": "ethereum",
+    "enabled": true
+  }
+]

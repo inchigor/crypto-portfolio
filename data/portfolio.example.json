@@ -1,0 +1,18 @@
+[
+  {
+    "id": "bitcoin",
+    "name": "Bitcoin",
+    "symbol": "BTC",
+    "coingeckoId": "bitcoin",
+    "amount": 0.05,
+    "source": "manual"
+  },
+  {
+    "id": "monero",
+    "name": "Monero",
+    "symbol": "XMR",
+    "coingeckoId": "monero",
+    "amount": 3.2,
+    "source": "manual"
+  }
+]
