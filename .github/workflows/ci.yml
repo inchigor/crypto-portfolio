@@ -12,6 +12,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [22, 24]
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -19,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: npm
 
       - name: Install dependencies
@@ -32,6 +36,9 @@ jobs:
           node --check server/index.js
           node --check server/prices.js
           node --check server/wallet.js
+          node --check server/portfolio.js
+          node --check server/history.js
+          node --check server/storage.js
 
       - name: Test
         run: npm test

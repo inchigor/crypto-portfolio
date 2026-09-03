@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
+const { writeJsonAtomically } = require("./storage");
 
 const portfolioPath = path.join(__dirname, "..", "data", "portfolio.json");
 
@@ -7,8 +8,7 @@ async function ensurePortfolioFile() {
   try {
     await fs.access(portfolioPath);
   } catch {
-    await fs.mkdir(path.dirname(portfolioPath), { recursive: true });
-    await fs.writeFile(portfolioPath, "[]\n", "utf8");
+    await writeJsonAtomically(portfolioPath, []);
   }
 }
 
@@ -20,7 +20,7 @@ async function readPortfolio() {
 }
 
 async function writePortfolio(portfolio) {
-  await fs.writeFile(portfolioPath, `${JSON.stringify(portfolio, null, 2)}\n`, "utf8");
+  await writeJsonAtomically(portfolioPath, portfolio);
 }
 
 function normalizeManualWalletId(value) {

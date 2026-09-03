@@ -1,5 +1,6 @@
 const fs = require("fs/promises");
 const path = require("path");
+const { writeJsonAtomically } = require("./storage");
 
 const walletPath = path.join(__dirname, "..", "data", "wallet.json");
 const walletsPath = path.join(__dirname, "..", "data", "wallets.json");
@@ -454,13 +455,6 @@ async function fileExists(filePath) {
   } catch {
     return false;
   }
-}
-
-async function writeJsonAtomically(filePath, data) {
-  const temporaryPath = `${filePath}.tmp`;
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(temporaryPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-  await fs.rename(temporaryPath, filePath);
 }
 
 function migrationTimestamp(date = new Date()) {

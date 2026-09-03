@@ -1,15 +1,15 @@
 const fs = require("fs/promises");
 const path = require("path");
+const { writeJsonAtomically } = require("./storage");
 
 const historyPath = path.join(__dirname, "..", "data", "history.json");
-const maxHistoryDays = 90;
+const maxHistoryDays = 400;
 
 async function ensureHistoryFile() {
   try {
     await fs.access(historyPath);
   } catch {
-    await fs.mkdir(path.dirname(historyPath), { recursive: true });
-    await fs.writeFile(historyPath, "[]\n", "utf8");
+    await writeJsonAtomically(historyPath, []);
   }
 }
 
@@ -21,7 +21,7 @@ async function readHistory() {
 }
 
 async function writeHistory(history) {
-  await fs.writeFile(historyPath, `${JSON.stringify(history, null, 2)}\n`, "utf8");
+  await writeJsonAtomically(historyPath, history);
 }
 
 function getLocalDateString(date = new Date()) {
@@ -33,6 +33,12 @@ function getLocalDateString(date = new Date()) {
 
 function roundCurrency(value) {
   return Math.round(value * 100) / 100;
+}
+
+function retainHistory(history) {
+  return [...history]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-maxHistoryDays);
 }
 
 async function upsertDailySnapshot(totalUsd, assets) {
@@ -59,16 +65,17 @@ async function upsertDailySnapshot(totalUsd, assets) {
     history.push(snapshot);
   }
 
-  history.sort((a, b) => a.date.localeCompare(b.date));
-  await writeHistory(history.slice(-maxHistoryDays));
+  await writeHistory(retainHistory(history));
 }
 
 async function getRecentHistory() {
   const history = await readHistory();
-  return history.sort((a, b) => a.date.localeCompare(b.date)).slice(-maxHistoryDays);
+  return retainHistory(history);
 }
 
 module.exports = {
   upsertDailySnapshot,
-  getRecentHistory
+  getRecentHistory,
+  retainHistory,
+  maxHistoryDays
 };

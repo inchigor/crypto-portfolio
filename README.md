@@ -30,7 +30,7 @@ A local-first crypto portfolio tracker built with Node.js, Express, and vanilla 
 
 ## Setup
 
-Requires Node.js 20 or newer.
+Requires Node.js 22 or newer.
 
 ```bash
 npm install

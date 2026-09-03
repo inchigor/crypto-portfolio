@@ -4,7 +4,7 @@
   "description": "Local-first crypto portfolio tracker with manual holdings and read-only EVM wallet sync.",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "main": "server/index.js",
   "scripts": {

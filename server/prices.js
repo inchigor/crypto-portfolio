@@ -6,6 +6,77 @@ let coinMapCache = {
   cachedAt: 0
 };
 let hasLoggedDemoAuth = false;
+const providerRequestTimeoutMs = 8 * 1000;
+const providerRequestMaxAttempts = 2;
+const providerRetryDelayMs = 300;
+
+function providerRetryDelay(delayMs) {
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+function shouldRetryProviderRequest(error) {
+  const status = Number(error?.status);
+
+  if (Number.isFinite(status)) {
+    return status === 429 || (status >= 500 && status <= 599);
+  }
+
+  return error?.nonRetryable !== true;
+}
+
+async function fetchJsonWithRetry(url, {
+  headers = {},
+  fetchImpl = global.fetch,
+  timeoutMs = providerRequestTimeoutMs,
+  maxAttempts = providerRequestMaxAttempts,
+  delayImpl = providerRetryDelay,
+  validate = null
+} = {}) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetchImpl(url, {
+        headers,
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        const error = new Error(`Provider request failed with status ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+
+      try {
+        const data = await response.json();
+
+        if (validate) {
+          validate(data);
+        }
+
+        return data;
+      } catch (error) {
+        error.nonRetryable = true;
+        throw error;
+      }
+    } catch (error) {
+      lastError = error;
+
+      if (attempt === maxAttempts || !shouldRetryProviderRequest(error)) {
+        throw error;
+      }
+
+      await delayImpl(providerRetryDelayMs);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  throw lastError;
+}
 
 function extractEthereumContractMetadata(coin) {
   const platform = coin?.platform;
@@ -155,21 +226,12 @@ async function fetchCoinMarketCapPrices(assets) {
   const combinedPricesById = {};
 
   for (const params of requestGroups) {
-    const response = await fetch(
+    const data = await fetchJsonWithRetry(
       `https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?${params}`,
       {
         headers: getCoinMarketCapHeaders()
       }
     );
-
-    if (!response.ok) {
-      console.log(`CoinMarketCap error status: ${response.status}`);
-      const error = new Error(`CoinMarketCap request failed with status ${response.status}`);
-      error.status = response.status;
-      throw error;
-    }
-
-    const data = await response.json();
     Object.assign(combinedPricesById, buildCoinMarketCapPrices(data.data, assets));
   }
 
@@ -195,16 +257,12 @@ async function getCoinMarketCapMap() {
     limit: "5000"
   });
 
-  const response = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?${params}`, {
-    headers: getCoinMarketCapHeaders()
-  });
-
-  if (!response.ok) {
-    console.log(`CoinMarketCap map error status: ${response.status}`);
-    throw new Error(`CoinMarketCap map request failed with status ${response.status}`);
-  }
-
-  const data = await response.json();
+  const data = await fetchJsonWithRetry(
+    `https://pro-api.coinmarketcap.com/v1/cryptocurrency/map?${params}`,
+    {
+      headers: getCoinMarketCapHeaders()
+    }
+  );
   coinMapCache = {
     data: data.data || [],
     cachedAt: now
@@ -354,18 +412,10 @@ async function fetchPrices(assets) {
   const headers = getCoinGeckoHeaders();
 
   try {
-    const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?${params}`, {
-      headers
-    });
-
-    if (!response.ok) {
-      console.log(`CoinGecko error status: ${response.status}`);
-      const error = new Error(`CoinGecko request failed with status ${response.status}`);
-      error.status = response.status;
-      throw error;
-    }
-
-    const marketData = await response.json();
+    const marketData = await fetchJsonWithRetry(
+      `https://api.coingecko.com/api/v3/coins/markets?${params}`,
+      { headers }
+    );
     const pricesById = {
       ...buildCoinGeckoPrices(marketData),
       ...(coinMarketCapResult?.pricesById || {})
@@ -446,16 +496,10 @@ async function searchCoins(query) {
   const headers = getCoinGeckoHeaders();
 
   try {
-    const response = await fetch(`https://api.coingecko.com/api/v3/search?${params}`, {
-      headers
-    });
-
-    if (!response.ok) {
-      console.log(`CoinGecko search error status: ${response.status}`);
-      throw new Error(`CoinGecko search failed with status ${response.status}`);
-    }
-
-    const searchData = await response.json();
+    const searchData = await fetchJsonWithRetry(
+      `https://api.coingecko.com/api/v3/search?${params}`,
+      { headers }
+    );
     const coins = (searchData.coins || []).slice(0, 8).map((coin) => ({
       name: coin.name,
       symbol: coin.symbol,
@@ -489,5 +533,6 @@ module.exports = {
   getEthereumContractMetadataForAssets,
   extractEthereumContractMetadata,
   mapCoinMarketCapSearchResult,
+  fetchJsonWithRetry,
   getProviderHealth
 };

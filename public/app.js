@@ -85,7 +85,7 @@ const searchHint = document.getElementById("searchHint");
 const sortButtons = document.querySelectorAll(".sort-button");
 const {
   t,
-  formatDate: formatRussianDate,
+  formatDate: formatUiDate,
   formatTokenAmount,
   formatWalletAmount,
   availableHistoryPeriods,
@@ -167,10 +167,6 @@ function percentClass(value) {
   return value >= 0 ? "positive" : "negative";
 }
 
-function formatDate(value) {
-  return formatRussianDate(value);
-}
-
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -183,15 +179,6 @@ function escapeHtml(value) {
 function shortAddress(value) {
   if (!value) return "—";
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
-}
-
-function pluralizeEnglish(value, one, few, many) {
-  const count = Math.abs(Number(value)) % 100;
-  const lastDigit = count % 10;
-  if (count > 10 && count < 20) return many;
-  if (lastDigit > 1 && lastDigit < 5) return few;
-  if (lastDigit === 1) return one;
-  return many;
 }
 
 function formatWalletCount(value) {
@@ -327,7 +314,7 @@ function renderWallets(wallets = [], walletSummary = {}, scope = {}) {
       ${isEvm ? `<a class="address-link wallet-list-address" href="${escapeHtml(addressUrl)}" target="_blank" rel="noreferrer" title="${escapeHtml(wallet.address)}">${escapeHtml(shortAddress(wallet.address))}</a>` : `<span class="wallet-list-address">Manual · ${escapeHtml(wallet.chain)}</span>`}
       <div class="wallet-list-sync">
         <span class="status-badge" data-status="${wallet.stale ? "stale" : wallet.lastSuccessfulSyncAt ? "synced" : "idle"}">${isEvm ? (wallet.stale ? "Sync error" : wallet.enabled ? "Enabled" : "Disabled") : "Manual"}</span>
-        <small title="${escapeHtml(wallet.lastSuccessfulSyncAt || "Manual accounting")}">${isEvm && wallet.lastSuccessfulSyncAt ? `Updated ${escapeHtml(formatDate(wallet.lastSuccessfulSyncAt))}` : `${formatAssetCount(wallet.manualAssets || 0)} manually`}</small>
+        <small title="${escapeHtml(wallet.lastSuccessfulSyncAt || "Manual accounting")}">${isEvm && wallet.lastSuccessfulSyncAt ? `Updated ${escapeHtml(formatUiDate(wallet.lastSuccessfulSyncAt))}` : `${formatAssetCount(wallet.manualAssets || 0)} manually`}</small>
         ${wallet.stale && wallet.lastError ? `<small class="wallet-card-error" title="${escapeHtml(wallet.lastError)}">${escapeHtml(wallet.lastError)}</small>` : ""}
       </div>
       <div class="wallet-list-actions">
@@ -682,7 +669,7 @@ function renderWallet(wallet, scope = {}) {
     : scope.manualAssets ? `${scope.walletOnly ? scope.walletName : "All wallets"} · ${formatAssetCount(scope.manualAssets)} manually` : t("noTrackedAssets");
   walletTrackedCount.textContent = String(displayTrackedAssets || 0);
   walletPricingCount.textContent = `${displayPricedAssets || 0} ${t("priced").toLowerCase()} · ${displayUnpricedAssets || 0} ${t("unpriced").toLowerCase()}`;
-  walletLastSync.textContent = formatDate(wallet.lastSuccessfulSyncAt);
+  walletLastSync.textContent = formatUiDate(wallet.lastSuccessfulSyncAt);
   walletStatus.textContent = wallet.stale
     ? t("walletStale")
     : wallet.lastSuccessfulSyncAt
@@ -851,7 +838,7 @@ function persistSortState() {
 function renderPortfolio(data) {
   portfolioTotal.textContent = formatUsd(data.totals.portfolioTotalUsd);
   const fullPriceSource = formatPriceSource(data.priceSource);
-  const fullUpdatedAt = formatDate(data.lastPriceUpdateTime);
+  const fullUpdatedAt = formatUiDate(data.lastPriceUpdateTime);
   priceProvider.textContent = formatPriceProvider(data.priceSource);
   priceProvider.title = fullPriceSource;
   priceProvider.setAttribute("aria-label", `Price source: ${fullPriceSource}`);
