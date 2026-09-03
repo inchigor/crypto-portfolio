@@ -4,6 +4,10 @@
 
 A local-first crypto portfolio tracker built with Node.js, Express, and vanilla JavaScript. It keeps portfolio data on your computer while using market-data providers for prices and search, plus optional read-only EVM wallet synchronization.
 
+## Screenshot
+
+![Crypto Portfolio dashboard with synthetic example data](docs/screenshot.png)
+
 ## Features
 
 - CoinMarketCap price and coin-search provider, with CoinGecko fallback
