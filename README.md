@@ -1,5 +1,7 @@
 # Crypto Portfolio
 
+[![CI](https://github.com/inchigor/crypto-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/inchigor/crypto-portfolio/actions/workflows/ci.yml)
+
 A local-first crypto portfolio tracker built with Node.js, Express, and vanilla JavaScript. It keeps portfolio data on your computer while using market-data providers for prices and search, plus optional read-only EVM wallet synchronization.
 
 ## Features
